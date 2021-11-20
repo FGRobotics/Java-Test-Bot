@@ -6,7 +6,9 @@ import java.util.List;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 
 import org.opencv.imgcodecs.Imgcodecs;
@@ -19,7 +21,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 public class ConceptCV extends OpenCvPipeline {
-
+        private double rectX;
+        private double midpoint;
 
 
         OpenCvCamera camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
@@ -45,8 +48,44 @@ public class ConceptCV extends OpenCvPipeline {
 
 
 
+
+        for(MatOfPoint contour : contours) {
+            boolean searching = true;
+    //should make countours into an array now.
+        while(searching) {
+            Point[] contourArray = contour.toArray();
+
+            Scalar color = new Scalar(0, 0, 255);
+
+            MatOfPoint2f areaPoints = new MatOfPoint2f(contour);
+
+
+            Rect rect = Imgproc.boundingRect(areaPoints);
+            Imgproc.drawContours(src, contours, -1, color, 2, Imgproc.LINE_8,
+                    hierarchey, 2, new Point());
+
+            if (rect.height > 180 && rect.height < 350) {
+                rectX = rect.x;
+                midpoint = rect.width * 0.5 + rectX;
+
+                searching = false;
+            }
+        }
+
+
+
+
+        }
+
+
+
+
+
         return null;
     } ;
 
+    public double getHubX(){
+        return midpoint;
+    }
 
 }
