@@ -20,6 +20,9 @@ public class RunCamera extends LinearOpMode {
 
 
         double midpoint = myPipeline.getHubX();
+        
+        telemetry.addData("Midpoint: ", midpoint);
+        telemetry.update();
 
 
 
