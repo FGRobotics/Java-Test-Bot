@@ -4,6 +4,10 @@ import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+
 public class RunCamera extends LinearOpMode {
 
     @Override
@@ -13,6 +17,11 @@ public class RunCamera extends LinearOpMode {
         //OpenCV Pipeline
         ConceptCV myPipeline;
         webcam.setPipeline(myPipeline = new ConceptCV());
+
+
+        double midpoint = myPipeline.getHubX();
+
+
 
     }
 }
