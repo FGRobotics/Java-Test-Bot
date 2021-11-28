@@ -1,3 +1,5 @@
+package org.firstinspires.ftc.teamcode;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -11,6 +13,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvInternalCamera;
@@ -28,31 +31,44 @@ public class ConceptCV extends OpenCvPipeline {
         OpenCvCamera camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
 
 
-        //Converting the source image to binary
 
+
+        //Converting the source image to binary
+        public static Scalar scalarLowerYCrCb = new Scalar(  45.7, -6.6, -8.3);
+        public static Scalar scalarUpperYCrCb = new Scalar(149.6, -84.4, -106.8);
 
     @Override
     public Mat processFrame(Mat input) {
         //input image
-        Mat src = input;
-        //changing it to binary
-        Mat gray = new Mat(src.rows(), src.cols(), src.type());
-        Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);
-        Mat binary = new Mat(src.rows(), src.cols(), src.type(), new Scalar(0));
-        Imgproc.threshold(gray, binary, 100, 255, Imgproc.THRESH_BINARY_INV);
-        //Finding Contours
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchey = new Mat();
-        Imgproc.findContours(binary, contours, hierarchey, Imgproc.RETR_TREE,
-                Imgproc.CHAIN_APPROX_SIMPLE);
 
+
+        Mat mat = new Mat();
+        Mat processed = new Mat();
+        Mat output = new Mat();
+
+
+        Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
+        Core.inRange(mat, scalarLowerYCrCb, scalarUpperYCrCb, processed);
+        // Core.bitwise_and(input, input, output, processed);
+
+        // Remove Noise
+        Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_OPEN, new Mat());
+        Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_CLOSE, new Mat());
+        // GaussianBlur
+        Imgproc.GaussianBlur(processed, processed, new Size(5.0, 15.0), 0.00);
+        // Find Contours
+        List<MatOfPoint> contours = new ArrayList<>();
+        Imgproc.findContours(processed, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        // Draw Contours
+        Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
 
 
 
         for(MatOfPoint contour : contours) {
-            boolean searching = true;
+
     //should make countours into an array now.
-        while(searching) {
+
             Point[] contourArray = contour.toArray();
 
             Scalar color = new Scalar(0, 0, 255);
@@ -61,18 +77,12 @@ public class ConceptCV extends OpenCvPipeline {
 
 
             Rect rect = Imgproc.boundingRect(areaPoints);
-            Imgproc.drawContours(src, contours, -1, color, 2, Imgproc.LINE_8,
-                    hierarchey, 2, new Point());
+
 
             if (rect.height > 180 && rect.height < 350) {
                 rectX = rect.x;
                 midpoint = rect.width * 0.5 + rectX;
 
-                searching = false;
-            }
-        }
-
-
 
 
         }
@@ -80,8 +90,13 @@ public class ConceptCV extends OpenCvPipeline {
 
 
 
+        }
 
-        return null;
+
+
+
+
+        return input;
     } ;
 
     public double getHubX(){
