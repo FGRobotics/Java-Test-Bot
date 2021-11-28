@@ -1,31 +1,39 @@
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.opencv.core.Scalar;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-
+@Autonomous(name="CVtester",group="Linear OpMode")
 public class RunCamera extends LinearOpMode {
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        waitForStart();
         OpenCvWebcam webcam;
-        while(opModeIsActive()) {
-            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
-            //OpenCV Pipeline
-            ConceptCV myPipeline;
-            webcam.setPipeline(myPipeline = new ConceptCV());
 
-            webcam.openCameraDeviceAsync(() -> webcam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT));
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
+        //OpenCV Pipeline
+        ConceptCV myPipeline;
+        webcam.setPipeline(myPipeline = new ConceptCV());
+
+        OpenCvWebcam finalWebcam = webcam;
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                finalWebcam.startStreaming(1920 ,1080, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+
+        waitForStart();
+
+
+        while(opModeIsActive()) {
+
 
             double midpoint = myPipeline.getHubX();
 
