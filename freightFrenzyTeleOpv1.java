@@ -54,7 +54,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 public class freightFrenzyTeleOpv1 extends LinearOpMode {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront,SlidesAngle,LSlides,Wheel,Intake;
     private Servo Bin;
-    public ElapsedTime wheelRun = new ElapsedTime();
+    
 
 
     private List<DcMotorEx> motors;
@@ -179,19 +179,20 @@ waitForStart();
             //Wheel.setPower(wheelPower);
 
             //Wheel exponential
+            ElapsedTime expo = new ElapsedTime(0);
+            
             if(gamepad1.x){
-
-                wheelRun.reset();
-                while(wheelRun.seconds()<3) {
-                    fortuneIII = Math.pow(0.005, wheelRun.seconds());
-
+                expo.reset();
+                while(expo.time()<3.0){
+                    fortuneIII = Math.pow(expo.time(),0.8);
+                    
                     Wheel.setPower(fortuneIII);
                 }
-
-
-
+                
+            }else{
+                Wheel.setPower(0);
             }
-
+            
             //Strafe while loop
             while(gamepad1.left_bumper){
 
