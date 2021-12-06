@@ -24,83 +24,91 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 public class ConceptCV extends OpenCvPipeline {
-        private double rectX;
-        private double midpoint;
-
-
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
+        public double rectX;
+        public double midpoint;
 
 
 
 
-        //Converting the source image to binary
-        public static Scalar scalarLowerYCrCb = new Scalar(  45.7, -6.6, -8.3);
-        public static Scalar scalarUpperYCrCb = new Scalar(149.6, -84.4, -106.8);
+
+    public int length;
+
+
+    public static Scalar lowHSv = new Scalar(  0.0, 0.0, 0.0);
+    public static Scalar UpHsv = new Scalar(255.0, 255.0, 255.0);
 
     @Override
     public Mat processFrame(Mat input) {
         //input image
 
-
+        Mat src = input;
         Mat mat = new Mat();
         Mat processed = new Mat();
         Mat output = new Mat();
 
+        try {
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
+            Core.inRange(mat, lowHSv, UpHsv, processed);
+            // Core.bitwise_and(input, input, output, processed);
 
-        Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
-        Core.inRange(mat, scalarLowerYCrCb, scalarUpperYCrCb, processed);
-        // Core.bitwise_and(input, input, output, processed);
+            // Remove Noise
+            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_OPEN, new Mat());
+            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_CLOSE, new Mat());
+            // GaussianBlur
+            Imgproc.GaussianBlur(processed, processed, new Size(5.0, 15.0), 0.00);
+            // Find Contours
+            List<MatOfPoint> contours = new ArrayList<>();
+            Imgproc.findContours(processed, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        // Remove Noise
-        Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_OPEN, new Mat());
-        Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_CLOSE, new Mat());
-        // GaussianBlur
-        Imgproc.GaussianBlur(processed, processed, new Size(5.0, 15.0), 0.00);
-        // Find Contours
-        List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(processed, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        // Draw Contours
-        Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
-
-
-
-        for(MatOfPoint contour : contours) {
-
-    //should make countours into an array now.
-
-            Point[] contourArray = contour.toArray();
-
-            Scalar color = new Scalar(0, 0, 255);
-
-            MatOfPoint2f areaPoints = new MatOfPoint2f(contour);
+            // Draw Contours
+            Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
 
 
-            Rect rect = Imgproc.boundingRect(areaPoints);
+            length = contours.size();
 
 
-            if (rect.height > 180 && rect.height < 350) {
+            for (MatOfPoint contour : contours) {
+
+                //should make countours into an array now.
+
+                Point[] contourArray = contour.toArray();
+
+
+                MatOfPoint2f areaPoints = new MatOfPoint2f(contour);
+
+                
+                Rect rect = Imgproc.boundingRect(areaPoints);
+
+                    
                 rectX = rect.x;
-                midpoint = rect.width * 0.5 + rectX;
+                midpoint = (double) rect.width * 0.5 + rectX;
 
 
-
+            }
         }
+        catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
 
 
 
 
-        }
+
+
 
 
 
 
 
         return input;
-    } ;
+    }
 
     public double getHubX(){
         return midpoint;
+    }
+    public int getLength(){
+        return length;
     }
 
 }
