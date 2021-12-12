@@ -54,7 +54,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 public class freightFrenzyTeleOpv1 extends LinearOpMode {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront,SlidesAngle,LSlides,Wheel,Intake;
     private Servo Bin;
-    
+    public ElapsedTime wheelRun = new ElapsedTime(0);
 
 
     private List<DcMotorEx> motors;
@@ -87,9 +87,9 @@ public class freightFrenzyTeleOpv1 extends LinearOpMode {
             motor.setMotorType(motorConfigurationType);
         }
 //Bin start position - 0.4 is too low and cause problems coming back in, 0.5 cause issues intaking sometimes
-Bin.setPosition(0.5);
+        Bin.setPosition(0.5);
 
-waitForStart();
+        waitForStart();
         while(opModeIsActive()) {
             // Variable setup
             double fortuneIII;
@@ -123,7 +123,7 @@ waitForStart();
             //if (LSlidesRotation < 5040){
             LSlidesPower = gamepad2.left_stick_y;
             //}else{
-                //LSlides.setPower(-0.1);
+            //LSlides.setPower(-0.1);
             //}
 
             //wheelPower = gamepad1.right_trigger * -1;
@@ -138,7 +138,7 @@ waitForStart();
             //Bin up and down
             if(gamepad2.right_bumper){
 
-                    Bin.setPosition(upRange);
+                Bin.setPosition(upRange);
 
             }else if(gamepad2.left_bumper){
                 Bin.setPosition(downRange);
@@ -179,26 +179,27 @@ waitForStart();
             //Wheel.setPower(wheelPower);
 
             //Wheel exponential
-            ElapsedTime expo = new ElapsedTime(0);
-            
             if(gamepad1.x){
-                expo.reset();
-                while(expo.time()<3.0){
-                    fortuneIII = Math.pow(expo.time(),0.8);
-                    
+
+                wheelRun.reset();
+                while(wheelRun.time()<3.0) {
+                    fortuneIII = Math.pow(wheelRun.time(),0.8);
+                    fortuneIII *= -1;
                     Wheel.setPower(fortuneIII);
                 }
-                
+
+
+
             }else{
                 Wheel.setPower(0);
             }
-            
+
             //Strafe while loop
             while(gamepad1.left_bumper){
 
-               // if(LSlidesPower > 0.0){
-                 //   Bin.setPosition(-1);
-             //   }
+                // if(LSlidesPower > 0.0){
+                //   Bin.setPosition(-1);
+                //   }
 
                 //Linear slides encoder tracker
                 if (LSlidesRotation < 5040){
@@ -241,7 +242,7 @@ waitForStart();
             }
             //strafed curve?
             while(gamepad1.right_bumper){
-
+                cStrafe(gamepad1.right_stick_x);
             }
 
         }
@@ -254,5 +255,34 @@ waitForStart();
         SlidesAngle.setPower(0);
         LSlides.setPower(0);
         Intake.setPower(0);
+
+
+    }
+    public void cStrafe(double p){
+        if(p < 0){
+            leftFront.setPower(p - p * 0.7); //dead wheel
+            leftRear.setPower(p*-1);
+            rightFront.setPower(p*-1);
+            rightRear.setPower(p);
+        }
+        else if (p > 0){
+            leftFront.setPower(p);
+            leftRear.setPower(p*-1);
+            rightFront.setPower((p*-1) - p * 0.7); //dead wheel
+            rightRear.setPower(p);
+            /*
+            leftFront.setPower(p * -1);
+            leftRear.setPower(p);
+            rightFront.setPower(p-p*0.7); //dead wheel
+            rightRear.setPower(p * -1);
+            */
+
+        }
+        else{
+            leftFront.setPower(p);
+            leftRear.setPower(p*-1);
+            rightFront.setPower(p*-1);
+            rightRear.setPower(p);
+        }
     }
 }
